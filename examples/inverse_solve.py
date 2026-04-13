@@ -7,6 +7,7 @@ from machine_first import plasma_boundary
 from freegsnke.inverse import Inverse_optimizer
 import matplotlib.pyplot as plt
 import pickle
+from freegs4e import geqdsk
 
 def init_psi():
 	from freeqdsk import geqdsk
@@ -39,7 +40,7 @@ def inverse_solve():
 	GSStaticSolver = GSstaticsolver.NKGSsolver(eq)
 	
 	#iso_R, iso_Z = plasma_boundary(factor=0.9, ellip=2.2, tria=0.5)	
-	iso_R, iso_Z = plasma_boundary(factor=0.9, ellip=1.8, tria=0.8)	
+	iso_R, iso_Z = plasma_boundary(factor=0.9, ellip=2.2, tria=0.5)	
 	lenR = len(iso_R)	
 	iso_sub_R = []
 	iso_sub_Z = []
@@ -63,13 +64,21 @@ def inverse_solve():
 						 target_relative_tolerance=1e-6,
 						 target_relative_psit_update=1e-3,
 						 verbose=True, 
-						 l2_reg=[1e-9]*5
+						 l2_reg=[1e-9]*3
 						)
 	inverse_current_values = eq.tokamak.getCurrents()
+	#print(inverse_current_values)
+	
+	#plot_eq(eq, constrain)
+	opt = eq._profiles.opt
+	xpt = eq._profiles.xpt
+	oxpoints = (opt, xpt)
+	with open("first_hhtest.geqdsk", "w") as f:
+		 geqdsk.write(eq, f, oxpoints=oxpoints)
 	# save coil currents to file
-	with open('data_first/first_test_currents_PaxisIp.pk', 'wb') as f:
-		pickle.dump(obj=inverse_current_values, file=f)	
-	plot_eq(eq, constrain)
+	#with open('data_first/first_test_currents_PaxisIp.pk', 'wb') as f:
+	#	pickle.dump(obj=inverse_current_values, file=f)	
+	#plot_eq(eq, constrain)
 
 def plot_eq(eq, constrain):
 	fig1, ax1 = plt.subplots(1, 1, figsize=(4, 8), dpi=80)

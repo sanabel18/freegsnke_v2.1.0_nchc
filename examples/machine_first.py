@@ -82,7 +82,40 @@ def set_passive_coil_entry( R, Z, dR, dZ):
 	}
 	return pass_dict
 
+def active_coils_13_45(): 
+	active_coils = {}
 	
+	active_coils['PF13'] = {}	
+	PF1N_R, PF1N_Z = 	calc_windings(0.95, 0.2, 0.065, 0.052, 5, 4)
+	active_coils = set_coil_entry(active_coils, PF1N_R, PF1N_Z, sqa, 'PF13', 'upper_1')
+	PF1S_R, PF1S_Z = 	calc_windings(0.95, -0.2, 0.065, 0.052, 5, 4)
+	active_coils = set_coil_entry(active_coils, PF1S_R, PF1S_Z, sqa, 'PF13', 'lower_1')
+	
+	PF3N_R, PF3N_Z = 	calc_windings(0.86, 0.63, 0.065, 0.052, 5, 4)
+	active_coils = set_coil_entry(active_coils, PF3N_R, PF3N_Z, sqa, 'PF13', 'upper_3')
+	PF3S_R, PF3S_Z = 	calc_windings(0.86, -0.63, 0.065, 0.052, 5, 4)
+	active_coils = set_coil_entry(active_coils, PF3S_R, PF3S_Z, sqa, 'PF13', 'lower_3')
+	
+	active_coils['PF45'] = {}	
+	PF4N_R, PF4N_Z = 	calc_windings(0.55, 0.92, 0.052, 0.065, 4, 5)
+	active_coils = set_coil_entry(active_coils, PF4N_R, PF4N_Z, sqa, 'PF45', 'upper_4')
+	PF4S_R, PF4S_Z = 	calc_windings(0.55, -0.92, 0.052, 0.065, 4, 5)
+	active_coils = set_coil_entry(active_coils, PF4S_R, PF4S_Z, sqa, 'PF45', 'lower_4')
+	
+	PF5N_R, PF5N_Z = 	calc_windings(0.16, 0.93, 0.05031, 0.052, 4, 4)
+	active_coils = set_coil_entry(active_coils, PF5N_R, PF5N_Z, sqa, 'PF45', 'upper_5')
+	PF5S_R, PF5S_Z = 	calc_windings(0.16, -0.93, 0.05031, 0.052, 4, 4)
+	active_coils = set_coil_entry(active_coils, PF5S_R, PF5S_Z, sqa, 'PF45', 'lower_5')
+	
+	# Solenoid
+	
+	R_CS, Z_CS, r_CS = solenoid()
+	active_coils = set_coil_entry(active_coils, R_CS, Z_CS, r_CS, 'Solenoid')
+
+	return active_coils
+
+
+
 
 def active_coils(): 
 	active_coils = {}
@@ -389,7 +422,7 @@ def create_machine_files(save_path):
 
 
 def build_first():
-	active_coil =  active_coils()
+	active_coil =  active_coils_13_45()
 	passive_coil = passive_coils()
 	pickup_coils = bdots()
 	flux_loops = flux_loop()
