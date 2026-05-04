@@ -11,7 +11,8 @@ from freegs4e import geqdsk
 
 def init_psi():
 	from freeqdsk import geqdsk
-	f = open('first.geqdsk','r')
+	f = open('/Users/hsiaohsl/workspace/pkg/sana_narlabs/tmp/freegsnke_v2.1.0_nchc/examples/data_first/eqdsk_Ip_30000.0_Paxis_32_am2an_3_R00.45_fac0.9_ellip2.2_tria0.5.geqdsk','r')
+	#f = open('./data_first/base.geqdsk','r')
 	data = geqdsk.read(f)
 	psi = data['psi']
 	return psi
@@ -27,20 +28,29 @@ def inverse_solve():
 		ny = 257,
 		psi = plasma_psi
 	)
-		 
+	Ip = 3e4
+	paxis=32
+	am = 2
+	an = 3
 	profiles = ConstrainPaxisIp(
 		eq=eq,
-		paxis=32,
-		Ip=3e4,
+		paxis=paxis,
+		Ip=Ip,
 		fvac=0.027,
-		alpha_m=2,
-		alpha_n=3
+		alpha_m=am,
+		alpha_n=an
 	)
+
+
 
 	GSStaticSolver = GSstaticsolver.NKGSsolver(eq)
 	
 	#iso_R, iso_Z = plasma_boundary(factor=0.9, ellip=2.2, tria=0.5)	
-	iso_R, iso_Z = plasma_boundary(factor=0.9, ellip=2.2, tria=0.5)	
+	ellip = 2.0
+	tria = 0.8
+	R0 = 0.46
+	fac = 0.9
+	iso_R, iso_Z = plasma_boundary(factor=fac, ellip=ellip, tria=tria, R0=R0)	
 	lenR = len(iso_R)	
 	iso_sub_R = []
 	iso_sub_Z = []
@@ -64,7 +74,8 @@ def inverse_solve():
 						 target_relative_tolerance=1e-6,
 						 target_relative_psit_update=1e-3,
 						 verbose=True, 
-						 l2_reg=[1e-9]*3
+						 #l2_reg=[1e-9]*3
+						 l2_reg=[1e-9]*5
 						)
 	inverse_current_values = eq.tokamak.getCurrents()
 	#print(inverse_current_values)
@@ -73,12 +84,19 @@ def inverse_solve():
 	opt = eq._profiles.opt
 	xpt = eq._profiles.xpt
 	oxpoints = (opt, xpt)
-	with open("first_hhtest.geqdsk", "w") as f:
-		 geqdsk.write(eq, f, oxpoints=oxpoints)
+
+	with open('data_first/current_Ip_{}_Paxis_{}_am{}an_{}_R0{}_fac{}_ellip{}_tria{}.pk'.format(Ip, paxis, am, an, R0,  fac ,ellip,tria), 'wb') as f:
+		pickle.dump(obj=inverse_current_values, file=f)
+	#plot_eq(eq, constrain)
+	savefile = 'data_first/eqdsk_Ip_{}_Paxis_{}_am{}an_{}_R0{}_fac{}_ellip{}_tria{}.geqdsk'.format(Ip, paxis, am, an, R0, fac ,ellip,tria)
+	with open(savefile, "w") as f:
+		geqdsk.write(eq,f, oxpoints=oxpoints)
+
+
 	# save coil currents to file
 	#with open('data_first/first_test_currents_PaxisIp.pk', 'wb') as f:
 	#	pickle.dump(obj=inverse_current_values, file=f)	
-	#plot_eq(eq, constrain)
+	plot_eq(eq, constrain)
 
 def plot_eq(eq, constrain):
 	fig1, ax1 = plt.subplots(1, 1, figsize=(4, 8), dpi=80)
