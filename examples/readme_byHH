@@ -1,0 +1,26 @@
+Quick Start:
+
+1. crate a conda env for freegsnke
+conda create -n freegsnke python=3.10
+conda activate freegsnke
+
+2. clone and install
+git clone https://github.com/sanabel18/freegs4e_v0.12.0_nchc.git
+git clone https://github.com/sanabel18/freegsnke_v2.1.0_nchc.git
+
+freegs4e_v0.12.0_nchc
+pip install -e ".[dev]"
+
+cd freegsnke_v2.1.0_nchc 
+pip install -e ".[dev]"
+
+in  this steps, if some packages is missing , just pip install them
+
+3. try freegsnke_v2.1.0_nchc/examples/machine_first.py 
+   or freegsnke_v2.1.0_nchc/examples/inverse_solve.py
+
+
+:))))
+
+
+
