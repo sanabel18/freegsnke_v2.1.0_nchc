@@ -8,6 +8,11 @@ from freegsnke.inverse import Inverse_optimizer
 import matplotlib.pyplot as plt
 import pickle
 from freegs4e import geqdsk
+import yaml
+
+
+R0_design = 0.45
+
 
 def init_psi():
 	'''
@@ -21,7 +26,7 @@ def init_psi():
 	psi = data['psi']
 	return psi
 
-def inverse_solve():
+def inverse_solve(config):
 	'''
 	with inverse solve, one is able to choose
 	Ip: plasma current
@@ -62,45 +67,54 @@ def inverse_solve():
 
 	By default, the solution is saved as *.geadsk file, and the PFC coils as *pk file
 	in data_first 
-    
-	there is a plotting tool to parse *geqdsk file, located in  
-    freegsnke_v2.1.0_nchc/tools
-     
+	
+	there is a plotting tool to parse *geqdsk file, located in	
+	freegsnke_v2.1.0_nchc/tools
+	 
 	'''
+	Rmin = config['Rmin']
+	Rmax = config['Rmax']
+	Zmin = config['Zmin']
+	Zmax = config['Zmax']
+	nx = config['nx']
+	ny = config['ny']
+
 	tokamak_first = build_first()
 	plasma_psi = init_psi()
 	eq = equilibrium_update.Equilibrium(
 		tokamak=tokamak_first,
-		Rmin = 0.01, Rmax = 2.5, 
-		Zmin = -3, Zmax = 3,
-		nx = 257,
-		ny = 257,
+		Rmin = Rmin, Rmax = Rmax, 
+		Zmin = Zmin, Zmax = Zmax,
+		nx = nx,
+		ny = ny,
 		psi = plasma_psi
 	)
-	Ip = 5e4
-	paxis=32
-	am = 1
-	an = 3
-	Btor = 0.1
-	fvec = Btor*0.45
+	
+	Ip = config['Ip']
+	paxis = config['paxis']
+	alpha_m	= config['alpha_m']
+	alpha_n	= config['alpha_n']
+	Btor  = config['Btor']	
+	
+	fvec = Btor*R0_design
 	profiles = ConstrainPaxisIp(
 		eq=eq,
 		paxis=paxis,
 		Ip=Ip,
 		fvac=fvec,
-		alpha_m=am,
-		alpha_n=an
+		alpha_m=alpha_m,
+		alpha_n=alpha_n
 	)
 
 
 
 	GSStaticSolver = GSstaticsolver.NKGSsolver(eq)
 	
-	ellip = 2.0
-	tria = 0.8
-	R0 = 0.46
-	fac = 0.9
-	iso_R, iso_Z = plasma_boundary(factor=fac, ellip=ellip, tria=tria, R0=R0)	
+	ellip = config['ellip']
+	tria = config['tria']
+	Raxis = config['Raxis']
+	fac = config['fac']
+	iso_R, iso_Z = plasma_boundary(factor=fac, ellip=ellip, tria=tria, R0=Raxis)	
 	lenR = len(iso_R)	
 	iso_sub_R = []
 	iso_sub_Z = []
@@ -153,6 +167,9 @@ def plot_eq(eq, constrain):
 
 
 if __name__ == '__main__':
-	inverse_solve()
+	with open('config_template.yaml','r') as f:
+		config_dict = yaml.safe_load(f)
+	
+	inverse_solve(config_dict)
 
 
