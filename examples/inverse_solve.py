@@ -60,6 +60,12 @@ def inverse_solve():
 	eq.tokamak['Solenoid'].control = False
 	to fix CS coil current through out optimization   
 
+	By default, the solution is saved as *.geadsk file, and the PFC coils as *pk file
+	in data_first 
+    
+	there is a plotting tool to parse *geqdsk file, located in  
+    freegsnke_v2.1.0_nchc/tools
+     
 	'''
 	tokamak_first = build_first()
 	plasma_psi = init_psi()
