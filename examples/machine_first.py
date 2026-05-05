@@ -374,7 +374,6 @@ def plot_machine(tokamak):
 
 	tokamak.plot(axis=ax1, show=False)
 	ax1.plot(tokamak.limiter.R, tokamak.limiter.Z, color='k', linewidth=1.2, linestyle="--")
-	#ax1.plot(tokamak_alt.wall.R, tokamak_alt.wall.Z, color='k', linewidth=1.2, linestyle="-")
 
 	ax1.grid(alpha=0.5)
 	ax1.set_aspect('equal')
@@ -405,7 +404,6 @@ def build_first_load(load_path):
     active_coils_data=f"{active_coils}",
     passive_coils_data=passive_coils,
     limiter_data=limiter,
-    #wall_data=wall,
     magnetic_probe_data=magnetic_probes,
 	)
 	return tokamak
@@ -422,7 +420,20 @@ def create_machine_files(save_path):
 
 
 def build_first():
-	active_coil =  active_coils_13_45()
+	'''
+	active coil stands for PFC coils that would be optimized durinig inverse solve
+    
+    active_coils_13_45() only has two independant PFC sets. PF1 and PF3 are in series and PF4 and PF5 are ini series.
+	This combination has been tested more efficient and better convergence.
+    If one would like to play with other combinations, one can implement their own combo.
+    
+    active_coils() contains 4 independent PF coils sets.
+    PF1, PF3, PF4, PF5
+	So far they are quite enough for shaping plasma with Ohmphic profiles.
+	as we have more budget and move toward advanced target, we can eventually add them back into the system.
+	'''
+	#active_coil =  active_coils_13_45()
+	active_coil =  active_coils()
 	passive_coil = passive_coils()
 	pickup_coils = bdots()
 	flux_loops = flux_loop()
@@ -430,14 +441,13 @@ def build_first():
 	magnetic_probes = {'flux_loops': flux_loops, 'pickups': pickup_coils}
 
 
-	for pc in pickup_coils:
-		print(pc)
+	#for pc in pickup_coils:
+    #	print(pc)
 	from freegsnke import build_machine
 	tokamak = build_machine.tokamak(
     active_coils_data=active_coil,
     passive_coils_data=passive_coil,
     limiter_data=lim,
-    #wall_data=wall,
     magnetic_probe_data=magnetic_probes,
 	)
 

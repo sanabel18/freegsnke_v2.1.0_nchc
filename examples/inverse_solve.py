@@ -10,14 +10,57 @@ import pickle
 from freegs4e import geqdsk
 
 def init_psi():
+	'''
+	with inverse solve method, it will easy to fail as the init psi does not converge,
+	here we apply the precalulated eqdsk 'first.geqdsk' as the initial guess to help the convergence.
+	'''
 	from freeqdsk import geqdsk
-	f = open('/Users/hsiaohsl/workspace/pkg/sana_narlabs/tmp/freegsnke_v2.1.0_nchc/examples/data_first/eqdsk_Ip_30000.0_Paxis_32_am2an_3_R00.45_fac0.9_ellip2.2_tria0.5.geqdsk','r')
+	f = open('first.geqdsk','r')
 	#f = open('./data_first/base.geqdsk','r')
 	data = geqdsk.read(f)
 	psi = data['psi']
 	return psi
 
 def inverse_solve():
+	'''
+	with inverse solve, one is able to choose
+	Ip: plasma current
+	Paxis: the Pressure in Pa at magnetics axis
+	am/an: parameters to define current and pressure profile within plasam
+		   am:3, an:2 can be regarded as Ohmic profile.
+	fvec = R*Btor (major radius, toroidal B field)
+		   in first, R = 0.45, Btor = 0.06, 0.1, etc.
+	plasma shape paramters:
+	 ellip = 2.0
+	 tria = 0.5
+	 R0 = 0.45
+	 fac = 0.9
+	one can play with plasma_boundary() to see what kind of plasma shpape you are interested.
+	
+	when the plasm shape has been defined, it will be put into solver as optimization constraint.
+	However, the function produce way to many points, therefore in will be reduce 20X before sending to solver.
+
+	in inverse solve, we defined target: Ip, Paxis, plasma shape, 
+	and solve for PFC and CS currents that will achieve those targets.	
+	
+	in GSStaticSolver.inverse_solve() , the parameter 'l2_reg=[1e-9]*5' stands for how many independent PFC coils
+	one would to optimized to. 
+	for example:
+		for array with size 5, we have [PF1, PF3, PF4, PF5, CS]
+		for array with size 3, we might have [PF_13, PF_45, CS]
+	here we have been ignoring PF2 and PF6 from the original design so far, as they 
+	1. for active vertical control
+	2. not help with convergence
+	
+	however, if one would like to add them back, one should set up their coil settings in first_machine.py 
+	and setting l2_reg = [1e-6,1e-6, 1e-9,1e-9,1e-9] for  [PF2_up, PF2_down, PF_13, PF_45, CS], for instance.
+	PF2 if for vertical control, so they can not have symmetric configuration, and the l2_reg is set bigger than other PFCs.
+
+	one can set  
+	eq.tokamak['Solenoid'].control = False
+	to fix CS coil current through out optimization   
+
+	'''
 	tokamak_first = build_first()
 	plasma_psi = init_psi()
 	eq = equilibrium_update.Equilibrium(
@@ -28,15 +71,17 @@ def inverse_solve():
 		ny = 257,
 		psi = plasma_psi
 	)
-	Ip = 3e4
+	Ip = 5e4
 	paxis=32
-	am = 2
+	am = 1
 	an = 3
+	Btor = 0.1
+	fvec = Btor*0.45
 	profiles = ConstrainPaxisIp(
 		eq=eq,
 		paxis=paxis,
 		Ip=Ip,
-		fvac=0.027,
+		fvac=fvec,
 		alpha_m=am,
 		alpha_n=an
 	)
@@ -45,7 +90,6 @@ def inverse_solve():
 
 	GSStaticSolver = GSstaticsolver.NKGSsolver(eq)
 	
-	#iso_R, iso_Z = plasma_boundary(factor=0.9, ellip=2.2, tria=0.5)	
 	ellip = 2.0
 	tria = 0.8
 	R0 = 0.46
@@ -59,10 +103,8 @@ def inverse_solve():
 			iso_sub_R.append(R)
 			iso_sub_Z.append(Z)
 
-	#isoflux_set = np.array([[iso_R.tolist(), iso_Z.tolist()]])
 	isoflux_set = np.array([[iso_sub_R, iso_sub_Z]])
 	print('isoflux_set {}'.format(isoflux_set))
-	#null_points = [[0.48],[0.0]]
 	#constrain = Inverse_optimizer(null_points=null_points,isoflux_set=isoflux_set)	
 	constrain = Inverse_optimizer(isoflux_set=isoflux_set)	
 
@@ -78,24 +120,18 @@ def inverse_solve():
 						 l2_reg=[1e-9]*5
 						)
 	inverse_current_values = eq.tokamak.getCurrents()
-	#print(inverse_current_values)
 	
-	#plot_eq(eq, constrain)
 	opt = eq._profiles.opt
 	xpt = eq._profiles.xpt
 	oxpoints = (opt, xpt)
 
-	with open('data_first/current_Ip_{}_Paxis_{}_am{}an_{}_R0{}_fac{}_ellip{}_tria{}.pk'.format(Ip, paxis, am, an, R0,  fac ,ellip,tria), 'wb') as f:
+	with open('data_first/current_Ip{}_Paxis{}_Btor{}_am{}an{}_R0{}_fac{}_ellip{}_tria{}.pk'.format(Ip, paxis, Btor, am, an, R0,  fac ,ellip,tria), 'wb') as f:
 		pickle.dump(obj=inverse_current_values, file=f)
-	#plot_eq(eq, constrain)
-	savefile = 'data_first/eqdsk_Ip_{}_Paxis_{}_am{}an_{}_R0{}_fac{}_ellip{}_tria{}.geqdsk'.format(Ip, paxis, am, an, R0, fac ,ellip,tria)
+	savefile = 'data_first/eqdsk_Ip{}_Paxis{}_Btor{}_am{}an{}_R0{}_fac{}_ellip{}_tria{}.geqdsk'.format(Ip, paxis, Btor, am, an, R0, fac ,ellip,tria)
 	with open(savefile, "w") as f:
 		geqdsk.write(eq,f, oxpoints=oxpoints)
 
 
-	# save coil currents to file
-	#with open('data_first/first_test_currents_PaxisIp.pk', 'wb') as f:
-	#	pickle.dump(obj=inverse_current_values, file=f)	
 	plot_eq(eq, constrain)
 
 def plot_eq(eq, constrain):

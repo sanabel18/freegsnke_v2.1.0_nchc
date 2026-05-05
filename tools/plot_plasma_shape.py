@@ -61,6 +61,6 @@ def make_plot(root,savefile):
 
 if __name__ == '__main__':
 	root = '/Users/hsiaohsl/workspace/pkg/sana_narlabs/freegsnke_v2.1.0_nchc/examples/data_first/plot'
-	root = '/Users/hsiaohsl/workspace/pkg/sana_narlabs/tmp/freegsnke_v2.1.0_nchc/examples/data_first/plot'
-	savefile = 'Ip3000_Btor0.06_2.png'
+	#root = '/Users/hsiaohsl/workspace/pkg/sana_narlabs/tmp/freegsnke_v2.1.0_nchc/examples/data_first/plot'
+	savefile = 'Ip5000_Btor0.1_am1an3.png'
 	make_plot(root,savefile)
