@@ -14,7 +14,7 @@ pip install -e ".[dev]"
 cd freegsnke_v2.1.0_nchc 
 pip install -e ".[dev]"
 
-in  this steps, if some packages is missing , just pip install them
+in  these steps, if some packages are missing , just pip install them
 
 3. try freegsnke_v2.1.0_nchc/examples/machine_first.py 
    or freegsnke_v2.1.0_nchc/examples/inverse_solve.py
