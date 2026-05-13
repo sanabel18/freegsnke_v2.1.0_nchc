@@ -641,6 +641,10 @@ class NKGSsolver:
                 print(
                     f"Forward static solve SUCCESS. Tolerance {rel_change:.2e} (vs. requested {target_relative_tolerance:.2e}) reached in {int(iterations)}/{int(max_solving_iterations)} iterations."
                 )
+        if rel_change > target_relative_tolerance:
+            return False
+        else:
+            return True
 
     def get_rel_delta_psit(self, delta_current, profiles, vgreen):
         """Calculates the relative change to the tokamak_psi in the core region
@@ -1135,6 +1139,11 @@ class NKGSsolver:
                 print(
                     f"Inverse static solve SUCCESS. Tolerance {rel_change_full:.2e} (vs. requested {target_relative_tolerance}) reached in {int(iterations)}/{int(max_solving_iterations)} iterations."
                 )
+        if rel_change_full > target_relative_tolerance:
+            return False
+        else:
+            return True
+
 
     def solve(
         self,

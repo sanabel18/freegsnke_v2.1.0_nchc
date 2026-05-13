@@ -1,0 +1,15 @@
+Rmin: 0.01
+Rmax: 2.5
+Zmin: -3
+Zmax: 3
+nx: 257
+ny: 257
+paxis: 32
+Ip: 30000.0
+Btor: 0.06
+alpha_m: 2
+alpha_n: 3
+ellip: 2.2
+tria: 0.5
+Raxis: 0.45
+fac: 0.9
